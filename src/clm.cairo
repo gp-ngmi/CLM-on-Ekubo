@@ -116,16 +116,23 @@ pub mod TemplateConcentratedLiquidityManager {
             self.pool_manager.mint_and_deposit(position_id.pool_key, position_id.bounds, liquidity);
         }
 
-        fn deposit(self: @ContractState,  min_liquidity: u128, caller: ContractAddress, receiver: ContractAddress) -> u256 {
+        fn deposit(self: @ContractState,  min_liquidity: u128, receiver: ContractAddress) -> u256 {
 
             // Compute token0 and token1 based on min_liquidity
             let token0_amount = 0;
             let token1_amount = 0;
 
             // transfer token0 and token1 to the manager
-            self.token0.transfer_from(get_caller_address(), get_contract_address(), token0_amount);
-            self.token1.transfer_from(get_caller_address(), get_contract_address(), token1_amount);
+            let caller = get_caller_address();
+            self.token0.transfer_from(caller, get_contract_address(), token0_amount);
+            self.token1.transfer_from(caller, get_contract_address(), token1_amount);
 
+            // Mint shares
+            let total_supply = self.total_supply.read();
+            self.total_supply.write(total_supply + min_liquidity);
+            self.balance_of.write(caller, min_liquidity);
+            self.liquidity.write(min_liquidity);
+            
             // Deposit liquidity
             self.harvest();
         }
