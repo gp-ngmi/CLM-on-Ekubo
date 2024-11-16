@@ -56,9 +56,11 @@ pub mod TemplateConcentratedLiquidityManager {
     ) {
         let token0_dispatcher = IERC20Dispatcher { contract_address: token0 };
         self.token0.write(token0_dispatcher);
+        token0_dispatcher.approve(pool_manager, MaxUint256);
 
         let token1_dispatcher = IERC20Dispatcher { contract_address: token1 };
         self.token1.write(token1_dispatcher);
+        token1_dispatcher.approve(pool_manager, MaxUint256)
 
         self.name.write(name);
         self.symbol.write(symbol);
@@ -68,6 +70,8 @@ pub mod TemplateConcentratedLiquidityManager {
 
         let position_id = GetTokenInfoRequest {id: id, pool_key:pool_key,bounds:bounds};
         self.position_id.write(position_id);
+
+
     }
 
     #[abi(embed_v0)]
@@ -89,5 +93,26 @@ pub mod TemplateConcentratedLiquidityManager {
         fn balance_of(self: @ContractState, account: ContractAddress) -> u256 {
             self.balance_of.read(account)
         }
+
+        fn harvest(self: @ContractState) -> u256 {
+
+            // Withdraw liquidity
+            let position_id = self.position_id.read();
+            let liquidity = self.total_supply.read();
+
+            self.pool_manager.withdraw_v2(position_id.id, position_id.pool_key, position_id.bounds, liquidity, 0, 0)
+            self.pool_manager.collect_fees(position_id.id, position_id.pool_key, position_id.bounds);
+        
+            // Swap in order to have 50/50
+
+            // Update bounds
+
+            // Compute liquidity
+
+            // Deposit liquidity
+            self.pool_manager.mint_and_deposit(position_id.pool_key, position_id.bounds, liquidity);
+
+        }
+
     }
 }

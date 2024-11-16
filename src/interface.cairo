@@ -33,8 +33,6 @@ pub trait IConcentradedLiquidityManager<TContractState> {
     fn withdraw_all(ref self: TContractState, shares: u256, receiver: starknet::ContractAddress) -> (u256, u256);
 
     // Harvest fees and rebalance the positionn
-    fn harvest(
-        ref self: TContractState
-    ) -> u256;
+    fn harvest(ref self: TContractState) -> (u256);
 
 }
