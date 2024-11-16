@@ -6,6 +6,7 @@ pub mod TemplateConcentratedLiquidityManager {
     use starknet::{
         get_caller_address, get_contract_address, get_block_number, get_block_timestamp
     };
+    use integer::BoundedU256;
 
     // Local imports.
     use clm_ekubo::interface::IConcentradedLiquidityManager;
@@ -36,6 +37,8 @@ pub mod TemplateConcentratedLiquidityManager {
         balance_of: Map<ContractAddress, u256>,
         // total supply of of the manager
         total_supply: u256,
+        // liquidity of the manager
+        liquidity: u256,
         // token0
         token0: IERC20Dispatcher,
         //token1
@@ -56,11 +59,11 @@ pub mod TemplateConcentratedLiquidityManager {
     ) {
         let token0_dispatcher = IERC20Dispatcher { contract_address: token0 };
         self.token0.write(token0_dispatcher);
-        token0_dispatcher.approve(pool_manager, MaxUint256);
+        token0_dispatcher.approve(pool_manager, BoundedU256::max());
 
         let token1_dispatcher = IERC20Dispatcher { contract_address: token1 };
         self.token1.write(token1_dispatcher);
-        token1_dispatcher.approve(pool_manager, MaxUint256)
+        token1_dispatcher.approve(pool_manager, BoundedU256::max())
 
         self.name.write(name);
         self.symbol.write(symbol);
@@ -98,7 +101,7 @@ pub mod TemplateConcentratedLiquidityManager {
 
             // Withdraw liquidity
             let position_id = self.position_id.read();
-            let liquidity = self.total_supply.read();
+            let liquidity = self.liquidity.read();
 
             self.pool_manager.withdraw_v2(position_id.id, position_id.pool_key, position_id.bounds, liquidity, 0, 0)
             self.pool_manager.collect_fees(position_id.id, position_id.pool_key, position_id.bounds);
@@ -111,8 +114,20 @@ pub mod TemplateConcentratedLiquidityManager {
 
             // Deposit liquidity
             self.pool_manager.mint_and_deposit(position_id.pool_key, position_id.bounds, liquidity);
-
         }
 
+        fn deposit(self: @ContractState,  min_liquidity: u128, caller: ContractAddress, receiver: ContractAddress) -> u256 {
+
+            // Compute token0 and token1 based on min_liquidity
+            let token0_amount = 0;
+            let token1_amount = 0;
+
+            // transfer token0 and token1 to the manager
+            self.token0.transfer_from(get_caller_address(), get_contract_address(), token0_amount);
+            self.token1.transfer_from(get_caller_address(), get_contract_address(), token1_amount);
+
+            // Deposit liquidity
+            self.harvest();
+        }
     }
 }
