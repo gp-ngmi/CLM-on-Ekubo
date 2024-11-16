@@ -6,6 +6,7 @@ name = "clm_ekubo"
 version = "0.1.0"
 dependencies = [
  "ekubo",
+ "openzeppelin",
  "snforge_std",
 ]
 
@@ -13,6 +14,11 @@ dependencies = [
 name = "ekubo"
 version = "0.1.0"
 source = "git+https://github.com/EkuboProtocol/abis.git#edb6de8c9baf515f1053bbab3d86825d54a63bc3"
+
+[[package]]
+name = "openzeppelin"
+version = "0.9.0"
+source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v0.9.0#364db5b1aecc1335d2e65db887291d19aa28937d"
 
 [[package]]
 name = "snforge_scarb_plugin"
