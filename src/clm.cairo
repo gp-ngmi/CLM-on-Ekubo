@@ -1,5 +1,5 @@
 #[starknet::contract]
-pub mod ConcentratedLiquidityManager {
+pub mod TemplateConcentratedLiquidityManager {
     
     // Core lib imports.
     use starknet::ContractAddress;
@@ -68,5 +68,26 @@ pub mod ConcentratedLiquidityManager {
 
         let position_id = GetTokenInfoRequest {id: id, pool_key:pool_key,bounds:bounds};
         self.position_id.write(position_id);
+    }
+
+    #[abi(embed_v0)]
+    impl ConcentradedLiquidityManager of IConcentradedLiquidityManager<ContractState> {
+        
+        fn name(self: @ContractState) -> felt252 {
+            self.name.read()
+        }
+
+        fn symbol(self: @ContractState) -> felt252 {
+            self.symbol.read()
+        }
+
+
+       fn total_supply(self: @ContractState) -> u256 {
+            self.total_supply.read()
+        }
+
+        fn balance_of(self: @ContractState, account: ContractAddress) -> u256 {
+            self.balance_of.read(account)
+        }
     }
 }
