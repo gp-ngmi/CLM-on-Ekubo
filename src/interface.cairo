@@ -27,7 +27,7 @@ pub trait IConcentradedLiquidityManager<TContractState> {
     // Deposit liquidity
     fn deposit(
         ref self: TContractState, min_liquidity: u128, receiver: starknet::ContractAddress
-    ) -> (u256);
+    ) -> (u256, u256);
     
     // Burn pool shares and withdraw funds
     fn withdraw_all(ref self: TContractState, shares: u256, receiver: starknet::ContractAddress) -> (u256, u256);

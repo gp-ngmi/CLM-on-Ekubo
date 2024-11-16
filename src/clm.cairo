@@ -114,9 +114,11 @@ pub mod TemplateConcentratedLiquidityManager {
 
             // Deposit liquidity
             self.pool_manager.mint_and_deposit(position_id.pool_key, position_id.bounds, liquidity);
+
+            return liquidity;
         }
 
-        fn deposit(self: @ContractState,  min_liquidity: u128, receiver: ContractAddress) -> u256 {
+        fn deposit(self: @ContractState,  min_liquidity: u128, receiver: ContractAddress) -> (u256, u256) {
 
             // Compute token0 and token1 based on min_liquidity
             let token0_amount = 0;
@@ -130,11 +132,48 @@ pub mod TemplateConcentratedLiquidityManager {
             // Mint shares
             let total_supply = self.total_supply.read();
             self.total_supply.write(total_supply + min_liquidity);
-            self.balance_of.write(caller, min_liquidity);
+            self.balance_of.write(receiver, min_liquidity);
             self.liquidity.write(min_liquidity);
-            
+
             // Deposit liquidity
             self.harvest();
+
+            return token0_amount, token1_amount;
+        }
+
+        fn withdraw_all(self: @ContractState,  shares: u128, receiver: ContractAddress) -> (u256, u256) {
+
+            // Withdraw liquidity
+            let position_id = self.position_id.read();
+            let liquidity = self.liquidity.read();
+
+            self.pool_manager.withdraw_v2(position_id.id, position_id.pool_key, position_id.bounds, liquidity, 0, 0)
+            self.pool_manager.collect_fees(position_id.id, position_id.pool_key, position_id.bounds);
+        
+            // Compute token0 and token1 based on shares and liquidity
+            let token0_amount = 0;
+            let token1_amount = 0;
+
+            // burn shares
+            let caller = get_caller_address();
+            let user_shares =  self.balance_of.read(caller);
+            self.balance_of.write(caller, user_shares - shares);
+            self.total_supply.write(total_supply - shares);
+            
+            // Send tokens
+            self.token0.transfer(receiver, token0_amount);
+            self.token1.transfer(receiver, token1_amount);
+
+            // Swap in order to have 50/50
+
+            // Update bounds
+
+            // Compute liquidity
+
+            // Deposit liquidity
+            self.pool_manager.mint_and_deposit(position_id.pool_key, position_id.bounds, liquidity);
+
+            return token0_amount, token1_amount;
         }
     }
 }
