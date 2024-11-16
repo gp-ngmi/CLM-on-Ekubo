@@ -5,8 +5,14 @@ version = 1
 name = "clm_ekubo"
 version = "0.1.0"
 dependencies = [
+ "ekubo",
  "snforge_std",
 ]
+
+[[package]]
+name = "ekubo"
+version = "0.1.0"
+source = "git+https://github.com/EkuboProtocol/abis.git#edb6de8c9baf515f1053bbab3d86825d54a63bc3"
 
 [[package]]
 name = "snforge_scarb_plugin"
